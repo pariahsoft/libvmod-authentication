@@ -5,6 +5,8 @@
 
 #include "vcc_if.h"
 
+#include "base64.h"
+
 int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 {
