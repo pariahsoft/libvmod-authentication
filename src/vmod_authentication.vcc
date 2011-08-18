@@ -1,4 +1,4 @@
 Module authentication
 Init init_function
-Function STRING hello(STRING)
+Function BOOL match(STRING, STRING, STRING)
 

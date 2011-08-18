@@ -8,7 +8,8 @@ libvmod_authentication_la_LDFLAGS = -module -export-dynamic -avoid-version
 libvmod_authentication_la_SOURCES = \
 	vcc_if.c \
 	vcc_if.h \
-	vmod_authentication.c
+	vmod_authentication.c \
+	base64.c
 
 vcc_if.c vcc_if.h: $(VARNISHSRC)/lib/libvmod_std/vmod.py $(top_srcdir)/src/vmod_authentication.vcc
 	@PYTHON@ $(VARNISHSRC)/lib/libvmod_std/vmod.py $(top_srcdir)/src/vmod_authentication.vcc
