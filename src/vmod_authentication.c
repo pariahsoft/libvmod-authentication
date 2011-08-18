@@ -68,7 +68,7 @@ vmod_match(struct sess *sp, const char *username, const char *password, const ch
 {
 	combination c = parse_authorization(encoded);
 	
-	bool result = strcmp(c.username, username) == 0 &&strcmp(c.password, password) == 0;
+	bool result = strcmp(c.username, username) == 0 && strcmp(c.password, password) == 0;
 	
 	free(c.username);
 	free(c.password);
