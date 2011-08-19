@@ -9,10 +9,9 @@
 #include "base64.h"
 
 #define BASE64_MAX_LEN		100
+#define	BUFFER_LEN			10
 
 typedef struct {
-	size_t username_len;
-	size_t password_len;
 	char *username;
 	char *password;
 } combination;
@@ -23,7 +22,7 @@ init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 	return (0);
 }
 
-combination
+combination *
 parse_authorization(const char *encoded)
 {
 	size_t decoded_len = BASE64_MAX_LEN;
@@ -32,31 +31,20 @@ parse_authorization(const char *encoded)
 	// base64 decode
 	if(!base64_decode(encoded, strlen(encoded), decoded, &decoded_len)) {
 		// input data was invalid
+		return NULL;
 	}
 	
-	combination c;
-	c.username_len = 0;
-	c.password_len = 0;
-	c.username = NULL;
-	c.password = NULL;
+	combination *c = malloc(sizeof(combination));
 	
-	int part = 0; // 0 = username; 1 = password
-		
-	for(unsigned int i = 0; i < decoded_len; i++) {
-		if(part == 0) {
-			if(decoded[i] == ':') {
-				part = 1;
-			} else {
-				c.username = realloc(c.username, (c.username_len++)+1);
-				c.username[c.username_len - 1] = decoded[i];
-				c.username[c.username_len] = 0;
-			}
-		} else {
-			c.password = realloc(c.password, (c.password_len++)+1);
-			c.password[c.password_len - 1] = decoded[i];
-			c.password[c.password_len] = 0;
-		}
+	char *split = strchr(decoded, ':');
+	if(split == NULL) {
+		// not in user:pass format
+		return NULL;
 	}
+	c->username = strndup(decoded, split - decoded);
+	c->password = strdup(decoded + (split - decoded) + 1);
+	
+	printf("Test: %s\n", c->username);
 	
 	free(decoded);
 	
@@ -66,12 +54,20 @@ parse_authorization(const char *encoded)
 unsigned
 vmod_match(struct sess *sp, const char *username, const char *password, const char *encoded)
 {
-	combination c = parse_authorization(encoded);
+	combination *c = parse_authorization(encoded);
 	
-	bool result = strcmp(c.username, username) == 0 && strcmp(c.password, password) == 0;
+	if(c == NULL) {
+		// something was invalid
+		return false;
+	}
 	
-	free(c.username);
-	free(c.password);
+	printf("Test: %s\n", c->username);
+	
+	bool result = strcmp(c->username, username) == 0 && strcmp(c->password, password) == 0;
+	
+	free(c->username);
+	free(c->password);
+	free(c);
 	
 	return result;
 }
