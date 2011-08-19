@@ -101,11 +101,17 @@ vmod_match_file(struct sess *sp, const char *filename)
 	combination *match;
 	
 	FILE* fp = fopen(filename, "r");
+	if(fp == NULL) {
+		return false; // couldn't open file (TODO: research Varnish logging funtions)
+	}
+	
 	while(!result && fgets(line, sizeof(line), fp)) {
 		if(line[strlen(line) - 1] == '\n')
 			line[strlen(line)-1] = 0;
 		
 		match = parse_auth_header(line);
+		if(match == NULL)
+			continue;
 		
 		if(strcmp(c->username, match->username) == 0 && strcmp(c->password, match->password) == 0) {
 			result = true;
@@ -123,7 +129,5 @@ vmod_match_file(struct sess *sp, const char *filename)
 	
 	return result;
 }
-
-
 
 
