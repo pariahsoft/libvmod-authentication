@@ -6,7 +6,7 @@
 # 
 backend default {
     .host = "127.0.0.1";
-    .port = "80";
+    .port = "8080";
 }
 
 import authentication;
@@ -24,3 +24,4 @@ sub vcl_error {
 		set obj.http.WWW-Authenticate = "Basic realm=Secure Area";
 	}
 }
+
