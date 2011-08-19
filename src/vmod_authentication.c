@@ -102,7 +102,8 @@ vmod_match_file(struct sess *sp, const char *filename)
 	
 	FILE* fp = fopen(filename, "r");
 	if(fp == NULL) {
-		return false; // couldn't open file (TODO: research Varnish logging funtions)
+		WSP(sp, SLT_VCL_Log, "vmod_authentication: unable to open file %s", filename);
+		return false;
 	}
 	
 	while(!result && fgets(line, sizeof(line), fp)) {
