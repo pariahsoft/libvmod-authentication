@@ -9,7 +9,6 @@
 #include "base64.h"
 
 #define BASE64_MAX_LEN		100
-#define	BUFFER_LEN			10
 
 typedef struct {
 	char *username;
