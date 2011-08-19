@@ -49,22 +49,32 @@ parse_authorization(const char *encoded)
 }
 
 unsigned
-vmod_match(struct sess *sp, const char *username, const char *password, const char *encoded)
+vmod_match(struct sess *sp, const char *username, const char *password)
 {
-	combination *c = parse_authorization(encoded);
+	char *auth_hdr = VRT_GetHdr(sp, HDR_REQ, "\16Authorization:");
 	
+	char *split = strchr(auth_hdr, ' ');
+	if(split == NULL) {
+		// invalid header data
+		return false;
+	}
+	
+	// assuming Basic, for now (TODO: don't assume)
+	char *auth = strdup(split + 1);
+	
+	combination *c = parse_authorization(auth);
 	if(c == NULL) {
 		// something was invalid
 		return false;
 	}
-	
-	printf("Test: %s\n", c->username);
 	
 	bool result = strcmp(c->username, username) == 0 && strcmp(c->password, password) == 0;
 	
 	free(c->username);
 	free(c->password);
 	free(c);
+	
+	free(auth);
 	
 	return result;
 }
