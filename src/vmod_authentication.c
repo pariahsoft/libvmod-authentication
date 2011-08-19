@@ -41,7 +41,7 @@ parse_authorization(const char *encoded)
 		return NULL;
 	}
 	c->username = strndup(decoded, split - decoded);
-	c->password = strdup(decoded + (split - decoded) + 1);
+	c->password = strdup(split + 1);
 	
 	free(decoded);
 	free(split);
