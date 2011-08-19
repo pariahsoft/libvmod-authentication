@@ -41,6 +41,8 @@ combination *
 get_client_auth(struct sess *sp)
 {
 	char *auth_hdr = VRT_GetHdr(sp, HDR_REQ, "\16Authorization:");
+	if(auth_hdr == NULL)
+		return NULL;
 	
 	char *split = strchr(auth_hdr, ' ');
 	if(split == NULL) {

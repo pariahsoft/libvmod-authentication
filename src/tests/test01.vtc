@@ -1,4 +1,4 @@
-varnishtest "Test basic HTTP authentication vmod (simple)"
+varnishtest "Test basic HTTP authentication vmod (non-existent header)"
 
 server s1 {
        rxreq
@@ -7,9 +7,6 @@ server s1 {
 
 varnish v1 -vcl+backend {
 	import authentication from "${vmod_topbuild}/src/.libs/libvmod_authentication.so";
-	sub vcl_recv {
-		set req.http.Authorization = "Basic YWRtaW46dGVzdA==";
-	}
 	sub vcl_deliver {
 		set resp.http.result = authentication.match("admin", "test");
 	}
@@ -18,7 +15,7 @@ varnish v1 -vcl+backend {
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect resp.http.result == true
+	expect resp.http.result == false
 }
 
 client c1 -run
