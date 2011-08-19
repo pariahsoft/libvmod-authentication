@@ -1,4 +1,5 @@
 Module authentication
 Init init_function
-Function BOOL match(STRING, STRING, STRING)
+Function BOOL match(STRING, STRING)
+Function BOOL match_file(STRING)
 

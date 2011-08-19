@@ -1,4 +1,4 @@
-varnishtest "Test basic HTTP authentication vmod (simple)"
+varnishtest "Test basic HTTP authentication vmod (file)"
 
 server s1 {
        rxreq
@@ -11,7 +11,7 @@ varnish v1 -vcl+backend {
 		set req.http.Authorization = "Basic YWRtaW46dGVzdA==";
 	}
 	sub vcl_deliver {
-		set resp.http.result = authentication.match("admin", "test");
+		set resp.http.result = authentication.match_file("${vmod_topbuild}/src/tests/pass.txt");
 	}
 } -start
 

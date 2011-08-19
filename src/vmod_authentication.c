@@ -22,34 +22,23 @@ init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 }
 
 combination *
-parse_authorization(const char *encoded)
+parse_auth_header(const char *data)
 {
-	size_t decoded_len = BASE64_MAX_LEN;
-	char *decoded = malloc(decoded_len);
-	
-	// base64 decode
-	if(!base64_decode(encoded, strlen(encoded), decoded, &decoded_len)) {
-		// input data was invalid
-		return NULL;
-	}
-	
 	combination *c = malloc(sizeof(combination));
 	
-	char *split = strchr(decoded, ':');
+	char *split = strchr(data, ':');
 	if(split == NULL) {
 		// not in user:pass format
 		return NULL;
 	}
-	c->username = strndup(decoded, split - decoded);
+	c->username = strndup(data, split - data);
 	c->password = strdup(split + 1);
-	
-	free(decoded);
 	
 	return c;
 }
 
-unsigned
-vmod_match(struct sess *sp, const char *username, const char *password)
+combination *
+get_client_auth(struct sess *sp)
 {
 	char *auth_hdr = VRT_GetHdr(sp, HDR_REQ, "\16Authorization:");
 	
@@ -62,11 +51,33 @@ vmod_match(struct sess *sp, const char *username, const char *password)
 	// assuming Basic, for now (TODO: don't assume)
 	char *auth = strdup(split + 1);
 	
-	combination *c = parse_authorization(auth);
+	size_t decoded_len = BASE64_MAX_LEN;
+	char *decoded = malloc(decoded_len);
+	
+	// base64 decode
+	if(!base64_decode(auth, strlen(auth), decoded, &decoded_len)) {
+		// input data was invalid
+		return NULL;
+	}
+	
+	combination *c = parse_auth_header(decoded);
 	if(c == NULL) {
 		// something was invalid
-		return false;
+		return NULL;
 	}
+	
+	free(auth);
+	free(decoded);
+	
+	return c;
+}
+
+unsigned
+vmod_match(struct sess *sp, const char *username, const char *password)
+{
+	combination *c = get_client_auth(sp);
+	if(c == NULL)
+		return false;
 	
 	bool result = strcmp(c->username, username) == 0 && strcmp(c->password, password) == 0;
 	
@@ -74,10 +85,45 @@ vmod_match(struct sess *sp, const char *username, const char *password)
 	free(c->password);
 	free(c);
 	
-	free(auth);
+	return result;
+}
+
+unsigned
+vmod_match_file(struct sess *sp, const char *filename)
+{
+	combination *c = get_client_auth(sp);
+	if(c == NULL)
+		return false;
+	
+	
+	bool result = false;
+	char line[100];
+	combination *match;
+	
+	FILE* fp = fopen(filename, "r");
+	while(!result && fgets(line, sizeof(line), fp)) {
+		if(line[strlen(line) - 1] == '\n')
+			line[strlen(line)-1] = 0;
+		
+		match = parse_auth_header(line);
+		
+		if(strcmp(c->username, match->username) == 0 && strcmp(c->password, match->password) == 0) {
+			result = true;
+		}
+		
+		free(match->username);
+		free(match->password);
+		free(match);
+	}
+	fclose(fp);
+	
+	free(c->username);
+	free(c->password);
+	free(c);
 	
 	return result;
 }
+
 
 
 
