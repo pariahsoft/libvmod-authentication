@@ -43,9 +43,8 @@ parse_authorization(const char *encoded)
 	c->username = strndup(decoded, split - decoded);
 	c->password = strdup(decoded + (split - decoded) + 1);
 	
-	printf("Test: %s\n", c->username);
-	
 	free(decoded);
+	free(split);
 	
 	return c;
 }
