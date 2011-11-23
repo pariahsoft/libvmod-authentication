@@ -7,8 +7,8 @@ Varnish HTTP Authentication Module
 ----------------------------------
 
 :Author: Omega Software Development Group
-:Date: 2011-05-26
-:Version: 1.0
+:Date: 2011-11-24
+:Version: 0.9
 :Manual section: 3
 
 SYNOPSIS
