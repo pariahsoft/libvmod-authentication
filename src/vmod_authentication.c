@@ -8,9 +8,7 @@
 
 #include "base64.h"
 
-#define BASE64_MAX_LEN		100
-
-typedef struct {
+typedef struct{
 	char *username;
 	char *password;
 } combination;
@@ -18,7 +16,7 @@ typedef struct {
 int
 init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 {
-	return (0);
+	return 0;
 }
 
 combination *
@@ -27,10 +25,12 @@ parse_auth_header(const char *data)
 	combination *c = malloc(sizeof(combination));
 	
 	char *split = strchr(data, ':');
-	if(split == NULL) {
+	if(split == NULL)
+	{
 		// not in user:pass format
 		return NULL;
 	}
+	
 	c->username = strndup(data, split - data);
 	c->password = strdup(split + 1);
 	
@@ -45,7 +45,8 @@ get_client_auth(struct sess *sp)
 		return NULL;
 	
 	char *split = strchr(auth_hdr, ' ');
-	if(split == NULL) {
+	if(split == NULL)
+	{
 		// invalid header data
 		return false;
 	}
@@ -53,18 +54,28 @@ get_client_auth(struct sess *sp)
 	// assuming Basic, for now (TODO: don't assume)
 	char *auth = strdup(split + 1);
 	
-	size_t decoded_len = BASE64_MAX_LEN;
-	char *decoded = malloc(decoded_len);
+	size_t len;
+	char *decoded;
 	
-	// base64 decode
-	if(!base64_decode(auth, strlen(auth), decoded, &decoded_len)) {
-		// input data was invalid
+	if(!base64_decode_alloc(auth, strlen(auth), &decoded, &len))
+	{
+		// unable to allocate space for decoding base64
+		free(auth);
+		return NULL;
+	}
+	
+	if(!base64_decode(auth, strlen(auth), decoded, &len))
+	{
+		// input data was seemingly invalid
+		free(auth);
 		return NULL;
 	}
 	
 	combination *c = parse_auth_header(decoded);
-	if(c == NULL) {
+	if(c == NULL)
+	{
 		// something was invalid
+		free(auth);
 		return NULL;
 	}
 	
@@ -97,25 +108,28 @@ vmod_match_file(struct sess *sp, const char *filename)
 	if(c == NULL)
 		return false;
 	
-	
 	bool result = false;
 	char line[100];
 	combination *match;
 	
 	FILE* fp = fopen(filename, "r");
-	if(fp == NULL) {
+	if(fp == NULL)
+	{
 		WSP(sp, SLT_VCL_Log, "vmod_authentication: unable to open file %s", filename);
 		return false;
 	}
 	
-	while(!result && fgets(line, sizeof(line), fp)) {
+	while(!result && fgets(line, sizeof(line), fp))
+	{
 		if(line[strlen(line) - 1] == '\n')
 			line[strlen(line)-1] = 0;
 		
+		// retrieve username and password for current line
 		match = parse_auth_header(line);
 		if(match == NULL)
 			continue;
 		
+		// test the combinations against eachother
 		if(strcmp(c->username, match->username) == 0 && strcmp(c->password, match->password) == 0) {
 			result = true;
 		}
