@@ -50,12 +50,13 @@ Return value
 Description
 	Tests the client's given credentials (if any) against a set of accepted username and password combinations, listed line-by-line in **filename**.
 Example
-	Throwing a "401 Authentication Required" error if the client fails to authenticate with any of the following combinations:
+	Throwing a "401 Authentication Required" error if the client fails to authenticate with any of the following combinations (`passwords.pwd`):
 	::
 		user1:password1
 		user2:password2
 		user3:password3
 	
+	Testing the client's username and password against the above.
 	::
 		if(!authentication.match_file("passwords.pwd")) {
 			error 401 "Authentication Required";
