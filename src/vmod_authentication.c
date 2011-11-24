@@ -50,7 +50,11 @@ get_client_auth(struct sess *sp)
 		return NULL;
 	}
 	
-	// assuming Basic, for now (TODO: don't assume)
+	if(strncmp(auth_hdr, "Basic", split - auth_hdr) != 0) {
+		// invalid
+		return NULL;
+	}
+	
 	char *auth = strdup(split + 1);
 	
 	size_t len;
