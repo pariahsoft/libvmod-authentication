@@ -16,7 +16,13 @@ sub vcl_recv {
 		error 401 "Authentication Required";
 	}
 	
-	return (lookup);
+	return (pass);
+}
+
+sub vcl_hash {
+	if (req.http.Authorization) {
+		hash_data(req.http.Authorization);
+	}
 }
 
 sub vcl_error {

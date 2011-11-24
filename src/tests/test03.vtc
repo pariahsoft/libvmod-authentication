@@ -1,4 +1,4 @@
-varnishtest "Test basic HTTP authentication vmod (file)"
+varnishtest "Test basic HTTP authentication vmod (wrong password)"
 
 server s1 {
        rxreq
@@ -11,14 +11,14 @@ varnish v1 -vcl+backend {
 		set req.http.Authorization = "Basic YWRtaW46dGVzdA==";
 	}
 	sub vcl_deliver {
-		set resp.http.result = authentication.match_file("${vmod_topbuild}/src/tests/pass.txt");
+		set resp.http.result = authentication.match("admin", "something_else");
 	}
 } -start
 
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect resp.http.result == true
+	expect resp.http.result == false
 }
 
 client c1 -run
