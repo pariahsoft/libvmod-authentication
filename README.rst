@@ -36,8 +36,10 @@ Description
 Example
 	Throwing a "401 Authentication Required" error if the client fails to authenticate as **admin** with password **test**.
 	::
-		if(!authentication.match("admin", "test")) {
-			error 401 "Authentication Required";
+		if(req.url ~ "^/protected/") {
+			if(!authentication.match("admin", "test")) {
+				error 401 "Authentication Required";
+			}
 		}
 
 COPYRIGHT
