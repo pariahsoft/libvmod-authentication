@@ -16,7 +16,7 @@ sub vcl_recv {
 		error 401 "Authentication Required";
 	}
 	
-	return (pass);
+	return (lookup);
 }
 
 sub vcl_hash {
